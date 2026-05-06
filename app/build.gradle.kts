@@ -23,6 +23,18 @@ dependencies {
 
     // This dependency is used by the application.
     implementation(libs.guava)
+
+    // PDF to HTML support
+    // Forked from original
+    implementation("io.github.se-be:pdf2dom:3.0.0")
+    
+    // HTML to PDF support
+    implementation("com.openhtmltopdf:openhtmltopdf-core:1.0.10")
+    implementation("com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10")
+    // images (optional)
+    implementation("com.openhtmltopdf:openhtmltopdf-java2d:1.0.10")
+    // required for HTML5
+    implementation("org.jsoup:jsoup:1.22.2")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -34,7 +46,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = "org.example.App"
+    mainClass = "org.pdfHtmlConverter.App"
 }
 
 tasks.named<Test>("test") {
