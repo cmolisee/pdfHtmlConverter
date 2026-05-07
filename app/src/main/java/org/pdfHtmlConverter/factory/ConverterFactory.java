@@ -13,7 +13,6 @@ public class ConverterFactory {
         }
 
         String extension = Utils.isHtml(arg) ? "html" : arg.substring(arg.lastIndexOf(".") + 1).toLowerCase();
-        System.out.println(extension);
         return switch (extension) {
             case "html" -> new HtmlToPdf(arg);
             case "pdf" -> new PdfToHtml(arg);
