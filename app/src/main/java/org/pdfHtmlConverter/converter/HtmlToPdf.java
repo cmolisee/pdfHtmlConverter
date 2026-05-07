@@ -2,65 +2,48 @@ package org.pdfHtmlConverter.converter;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.System.Logger;
 import java.net.URL;
+import java.nio.file.Path;
 
 import org.jsoup.Jsoup;
 import org.jsoup.helper.W3CDom;
-import org.jsoup.nodes.Document;
 import org.pdfHtmlConverter.Utils;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 
 public class HtmlToPdf implements Converter {
-    private String arg = null;
-    private static final Logger LOGGER = System.getLogger(HtmlToPdf.class.getName());
+    private String fileOrHtml = null;
 
-    public HtmlToPdf(String argString) {
-        arg = argString;
-    }
-
-    private org.w3c.dom.Document html5ParseDocument(String urlStr, int timeoutMs) throws IOException {
-		URL url = new URL(urlStr);
-		Document doc;
-		
-		if (url.getProtocol().equalsIgnoreCase("file")) {
-			doc = Jsoup.parse(new File(url.getPath()), "UTF-8");
-		}
-		else {
-			doc = Jsoup.parse(url, timeoutMs);	
-		}
-
-		return new W3CDom().fromJsoup(doc);
-	}
-
-    private org.w3c.dom.Document parseRawHtml5String(String html) {
-        org.jsoup.nodes.Document jsoupDoc = Jsoup.parse(html, "UTF-8");
-        jsoupDoc.outputSettings().syntax(org.jsoup.nodes.Document.OutputSettings.Syntax.xml);
-        return new W3CDom().fromJsoup(jsoupDoc);
+    public HtmlToPdf(String arg) {
+        fileOrHtml = arg;
     }
 
     @Override
     public void convert() throws IllegalArgumentException {
-        if (arg == null) throw new IllegalArgumentException("Expected file path or HTML");
+        if (fileOrHtml == null) throw new IllegalArgumentException("Expected file path or HTML");
 
-        Boolean isHtml = Utils.isHtml(arg);
-        String outputPath = isHtml ? "./pdfFromRawHtml.pdf" : "./" + Utils.getFileName(arg) + ".pdf";
+        Boolean isHtml = Utils.isHtml(fileOrHtml);
+        String outputPath = isHtml ? Path.of(System.getProperty("user.home"), "Downloads", "converted.pdf").toString() : Path.of(Utils.getFileDirectory(fileOrHtml), Utils.getFileName(fileOrHtml)).toString();
         try (OutputStream os = new FileOutputStream(outputPath)) {
-            File inputHtml = new File(arg);
-            org.w3c.dom.Document doc = isHtml ? parseRawHtml5String(arg) : html5ParseDocument(arg, 10000);
-            
             PdfRendererBuilder builder = new PdfRendererBuilder();
             builder.useFastMode();
-            builder.withW3cDocument(doc, isHtml ? "/" : inputHtml.toURI().toString());
+            if (isHtml) {
+                org.jsoup.nodes.Document jsoupDoc = Jsoup.parse(fileOrHtml, "UTF-8");
+                jsoupDoc.outputSettings().syntax(org.jsoup.nodes.Document.OutputSettings.Syntax.xml);
+                builder.withW3cDocument(new W3CDom().fromJsoup(jsoupDoc), "/");
+            } else {
+                File htmlFile = new File(new URL(fileOrHtml).getPath());
+                org.jsoup.nodes.Document jsoupDoc = Jsoup.parse(new File(new URL(fileOrHtml).getPath()), "UTF-8");
+                builder.withW3cDocument(new W3CDom().fromJsoup(jsoupDoc), htmlFile.toURI().toString());
+            }
             builder.toStream(os);
             builder.run();
             
-            LOGGER.log(System.Logger.Level.INFO, () -> "Conversion complete: " + outputPath);
+            System.out.println("Conversion complete: " + outputPath);
         } catch (Exception e) {
-            LOGGER.log(System.Logger.Level.ERROR, "Unable to convert to PDF", e);
+            System.out.println("Unable to convert to PDF");
+            System.out.println(e.getMessage());
         }
     }
     

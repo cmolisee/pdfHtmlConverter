@@ -2,7 +2,6 @@ package org.pdfHtmlConverter.converter;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.System.Logger;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -18,29 +17,29 @@ import org.w3c.dom.Document;
 import io.github.se_be.pdf2dom.PDFDomTree;
 
 public class PdfToHtml implements Converter {
-    private String arg = null;
-    private static final Logger LOGGER = System.getLogger(PdfToHtml.class.getName());
+    private String path = null;
 
-    public PdfToHtml(String argString) {
-        arg = argString;
+    public PdfToHtml(String arg) {
+        path = arg;
     }
 
     @Override
     public void convert() {
-        if (arg == null) throw new IllegalArgumentException("Expected file path");
-        if (!Utils.isValidExistingFile(arg)) throw new IllegalArgumentException("Invalid file path");
+        if (path == null) throw new IllegalArgumentException("Expected file path");
+        if (!Utils.isValidExistingFile(path)) throw new IllegalArgumentException("Invalid file path");
 
-        String outputPath = "./" + Utils.getFileName(arg) + ".html";
+        String outputPath = Utils.changeFileExtension(path, "html");
         try {
-            PDDocument pdf = Loader.loadPDF(new File(arg));
+            PDDocument pdf = Loader.loadPDF(new File(path));
             PDFDomTree parser = new PDFDomTree();
             Document dom = parser.createDOM(pdf);
             
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
             transformer.transform(new DOMSource(dom), new StreamResult(new File(outputPath)));
-            LOGGER.log(System.Logger.Level.INFO, () -> "Conversion complete: " + outputPath);
+            System.out.println("Conversion complete: " + outputPath);
         } catch (IOException | TransformerException e) {
-            LOGGER.log(System.Logger.Level.ERROR, "Error converting to HTML", e);
+            System.out.println("Error converting to HTML");
+            System.out.println(e.getMessage());
         }
     }
 }

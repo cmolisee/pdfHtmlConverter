@@ -28,11 +28,9 @@ dependencies {
     // Forked from original
     implementation("io.github.se-be:pdf2dom:3.0.0")
     
-    // HTML to PDF support
-    implementation("com.openhtmltopdf:openhtmltopdf-core:1.0.10")
-    implementation("com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10")
-    // images (optional)
-    implementation("com.openhtmltopdf:openhtmltopdf-java2d:1.0.10")
+    // HTML to PDF support (forked for 3.x pdfbox support)
+    implementation("io.github.openhtmltopdf:openhtmltopdf-pdfbox:1.1.37")
+    implementation("io.github.openhtmltopdf:openhtmltopdf-core:1.1.37")
     // required for HTML5
     implementation("org.jsoup:jsoup:1.22.2")
 }
